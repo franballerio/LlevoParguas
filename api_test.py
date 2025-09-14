@@ -5,32 +5,24 @@ import pandas as pd
 import requests_cache
 
 from retry_requests import retry
-from telegram.ext import ApplicationBuilder
-from dotenv import load_dotenv
-from telegram import Update
-from telegram.ext import ContextTypes
-from telegram.ext import CommandHandler, MessageHandler, filters
 
-load_dotenv()
-
-BOT_TOKEN = os.getenv('BOT_TOKEN')
 
 # Setup the Open-Meteo API client with cache and retry on error
-cache_session = requests_cache.CachedSession('.cache', expire_after = 3600)
-retry_session = retry(cache_session, retries = 5, backoff_factor = 0.2)
-openmeteo = openmeteo_requests.Client(session = retry_session)
+cache_session = requests_cache.CachedSession('.cache', expire_after=3600)
+retry_session = retry(cache_session, retries=5, backoff_factor=0.2)
+openmeteo = openmeteo_requests.Client(session=retry_session)
 
 # Make sure all required weather variables are listed here
 # The order of variables in hourly or daily is important to assign them correctly below
 url = "https://api.open-meteo.com/v1/forecast"
 params = {
-	"latitude": -34.5926,
-	"longitude": -58.4364,
-	"hourly": ["temperature_2m", "precipitation", "precipitation_probability", "apparent_temperature", "cloud_cover", "visibility", "wind_speed_10m", "dew_point_2m", "relative_humidity_2m"],
-	"current": ["temperature_2m", "precipitation", "apparent_temperature"],
-	"timezone": "America/Sao_Paulo",
-	"forecast_days": 1,
-	"bounding_box": "-90,-180,90,180",
+    "latitude": -34.5926,
+    "longitude": -58.4364,
+    "hourly": ["temperature_2m", "precipitation", "precipitation_probability", "apparent_temperature", "cloud_cover", "visibility", "wind_speed_10m", "dew_point_2m", "relative_humidity_2m"],
+    "current": ["temperature_2m", "precipitation", "apparent_temperature"],
+    "timezone": "America/Sao_Paulo",
+    "forecast_days": 1,
+    "bounding_box": "-90,-180,90,180",
 }
 responses = openmeteo.weather_api(url, params=params)
 
@@ -65,10 +57,10 @@ hourly_dew_point_2m = hourly.Variables(7).ValuesAsNumpy()
 hourly_relative_humidity_2m = hourly.Variables(8).ValuesAsNumpy()
 
 hourly_data = {"date": pd.date_range(
-	start = pd.to_datetime(hourly.Time(), unit = "s", utc = True),
-	end = pd.to_datetime(hourly.TimeEnd(), unit = "s", utc = True),
-	freq = pd.Timedelta(seconds = hourly.Interval()),
-	inclusive = "left"
+    start=pd.to_datetime(hourly.Time(), unit="s", utc=True),
+    end=pd.to_datetime(hourly.TimeEnd(), unit="s", utc=True),
+    freq=pd.Timedelta(seconds=hourly.Interval()),
+    inclusive="left"
 )}
 
 hourly_data["temperature_2m"] = hourly_temperature_2m
@@ -81,21 +73,5 @@ hourly_data["wind_speed_10m"] = hourly_wind_speed_10m
 hourly_data["dew_point_2m"] = hourly_dew_point_2m
 hourly_data["relative_humidity_2m"] = hourly_relative_humidity_2m
 
-hourly_dataframe = pd.DataFrame(data = hourly_data)
+hourly_dataframe = pd.DataFrame(data=hourly_data)
 print("\nHourly data\n", hourly_dataframe)
-
-
-async def send_message(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    return await update.message.reply_text('Welcome')
-
-
-def main():
-    app = ApplicationBuilder().token(BOT_TOKEN).build()
-
-    app.add_handler(CommandHandler('start', send_message))
-
-    app.run_polling()
-
-
-if __name__ == "__main__":
-    main()
