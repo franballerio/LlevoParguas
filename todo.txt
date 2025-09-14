@@ -1,0 +1,9 @@
+Im doing a bot to send the weather forecast for the next day.
+Initialy it only does that, then we are creating more features.
+
+V 1.0.0:
+    - You register the bot and it send you the forecast at 22hs and 6.45hs
+    - the data it send is going to depend on the api that i consider the best
+    - the format is going to be in plain text at this stage 
+    - first of all is going to be on telegram
+    
