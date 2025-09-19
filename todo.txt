@@ -6,4 +6,8 @@ V 1.0.0:
     - the data it send is going to depend on the api that i consider the best
     - the format is going to be in plain text at this stage 
     - first of all is going to be on telegram
+
+v 1.1.0
+    - add precipitation odds
+    - some messages like an ai
     
